@@ -205,7 +205,7 @@
 
                     <form @submit.prevent="loginSubmit" method="post" action="" class="">
                         <div class="flex justify-between mb-6">
-                           <img :src="`/storage/`+setting.software_logo_black" alt="logotipo" class="logotipo-form">
+                           <!-- <img v-if="settings?.software_logo_black" :src="settings.software_logo_black" /> -->
                             <a @click.prevent="loginToggle" href="">
                                 <i class="fa-solid fa-xmark"></i>
                             </a>
@@ -254,7 +254,6 @@
                 <div class="w-full relative p-5 m-auto">
                     <form @submit.prevent="registerSubmit" method="post" action="" class="">
                         <div class="flex justify-between mb-6">
-                          	<img :src="`/storage/`+setting.software_logo_black" alt="logotipo" class="logotipo-form">
                             <a @click.prevent="registerToggle" href="">
                                 <i class="fa-solid fa-xmark"></i>
                             </a>

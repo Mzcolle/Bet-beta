@@ -133,16 +133,16 @@ export default {
             modalMission: null,
         }
     },
-    setup(props) {
+    // setup(props) {
 
-        onMounted(() => {
-            initFlowbite();
-        });
+    //     onMounted(() => {
+    //         initFlowbite();
+    //     });
 
-        return {
+    //     return {
 
-        };
-    },
+    //     };
+    // },
     computed: {
         isAuthenticated() {
             const authStore = useAuthStore();

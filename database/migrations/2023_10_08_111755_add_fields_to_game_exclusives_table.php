@@ -9,15 +9,15 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
-        Schema::table('game_exclusives', function (Blueprint $table) {
-            $table->text('loseResults');
-            $table->text('demoWinResults');
-            $table->text('winResults');
-            $table->text('iconsJson');
-        });
-    }
+public function up()
+{
+    Schema::table('game_exclusives', function (Blueprint $table) {
+        $table->text('loseResults')->nullable()->after('name');
+        $table->text('demoWinResults')->nullable();
+        $table->text('winResults')->nullable();
+        $table->text('iconsJson')->nullable();
+    });
+}
 
     /**
      * Reverse the migrations.

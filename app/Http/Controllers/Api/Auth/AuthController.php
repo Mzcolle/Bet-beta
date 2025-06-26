@@ -75,14 +75,14 @@ class AuthController extends Controller
                 'password'      => ['required', 'confirmed', Rules\Password::min(6)],
                 'phone'         => 'required',
                 //'cpf'         => 'required',
-                'term_a'        => 'required',
-                'agreement'     => 'required',
+                'term_a'        => 'accepted',
+                'agreement'     => 'accepted',
             ];
 
             $validator = \Validator::make($request->all(), $rules);
 
             if ($validator->fails()) {
-                return response()->json($validator->errors(), 400);
+                return response()->json($validator->errors(), 422);
             }
 
             $userData = $request->only(['name', 'password', 'email', 'phone', 'cpf']);

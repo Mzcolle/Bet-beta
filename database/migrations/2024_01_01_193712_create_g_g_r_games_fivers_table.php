@@ -13,8 +13,15 @@ return new class extends Migration
     {
         Schema::create('ggr_games_fivers', function (Blueprint $table) {
             $table->id();
-            $table->integer('user_id')->unsigned()->index();
+            
+            // CORRIGIDO: Mudou de integer() para unsignedBigInteger() 
+            // para ser compatível com a tabela users
+            $table->unsignedBigInteger('user_id')->index();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            
+            // OU alternativamente, você pode usar a forma moderna:
+            // $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            
             $table->string('provider');
             $table->string('game');
             $table->decimal('balance_bet', 20, 2)->default(0);
@@ -29,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('g_g_r_games_fivers');
+        Schema::dropIfExists('ggr_games_fivers');
     }
 };

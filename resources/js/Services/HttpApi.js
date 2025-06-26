@@ -1,38 +1,75 @@
 import axios from 'axios';
 import router from '../Router';
-import {useAuthStore} from "@/Stores/Auth.js";
+import { useAuthStore } from "@/Stores/Auth.js";
 
-const csrfToken = document.head.querySelector('meta[name="csrf-token"]');
+// Obter CSRF Token de forma segura
+const getCsrfToken = () => {
+    const metaTag = document.head.querySelector('meta[name="csrf-token"]');
+    return metaTag ? metaTag.content : '';
+};
 
-const http_axios = axios.create({
-    baseURL: (import.meta.env.VITE_BASE_URL || '/')+'api/',
+// Criação da instância única
+const http = axios.create({
+    baseURL: (import.meta.env.VITE_BASE_URL || '/') + 'api/',
     headers: {
-        'X-CSRF-TOKEN': csrfToken.content,
-        "Content-type": "application/json",
-        "Access-Control-Allow-Origin": "*",
+        'X-CSRF-TOKEN': getCsrfToken(),
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
     },
+    withCredentials: true // Para cookies/sessão
 });
 
-http_axios.interceptors.request.use((request) => {
-    const userStore = useAuthStore()
-
-    if(userStore.getToken()) {
-        request.headers.Authorization = 'Bearer ' + userStore.getToken()
-    }
-
-    return request;
-})
-
-
-http_axios.interceptors.response.use(
-    response => response,
-    error => {
-        if(error.response && [401,403].includes(error.response.status)) {
-            //window.location.href = "/";
-            router.push('login');
+// Interceptor de Request
+http.interceptors.request.use(
+    (config) => {
+        const authStore = useAuthStore();
+        
+        // Log para debug (remova em produção)
+        console.log('[Request]', config.method?.toUpperCase(), config.url);
+        
+        // Adiciona token de autenticação se existir
+        if (authStore.getToken()) {
+            config.headers.Authorization = `Bearer ${authStore.getToken()}`;
         }
+        
+        return config;
+    },
+    (error) => {
+        console.error('[Request Error]', error);
         return Promise.reject(error);
     }
-)
+);
 
-export default http_axios;
+// Interceptor de Response
+http.interceptors.response.use(
+    (response) => {
+        console.log('[Response]', response.status, response.config.url);
+        return response;
+    },
+    (error) => {
+        if (error.response) {
+            console.error('[Response Error]', error.response.status, error.config.url);
+            
+            // Tratamento de erros de autenticação
+            if ([401, 403].includes(error.response.status)) {
+                const authStore = useAuthStore();
+                authStore.logout();
+                router.push({ name: 'login' });
+            }
+            
+            // Tratamento especial para erros 422 (validação)
+            if (error.response.status === 422) {
+                return Promise.reject({
+                    ...error,
+                    validationErrors: error.response.data.errors
+                });
+            }
+        } else {
+            console.error('[Network Error]', error.message);
+        }
+        
+        return Promise.reject(error);
+    }
+);
+
+export default http;

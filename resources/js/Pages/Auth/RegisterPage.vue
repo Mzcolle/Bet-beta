@@ -25,6 +25,9 @@
                                                :placeholder="$t('Enter name')"
                                                required
                                         >
+                                        <div v-if="errors.name" class="text-red-500 text-sm mt-1">
+                                            {{ errors.name[0] }}
+                                        </div>
                                     </div>
 
                                     <div class="relative mb-3">
@@ -38,6 +41,9 @@
                                                :placeholder="$t('Enter email or phone')"
                                                required
                                         >
+                                        <div v-if="errors.email" class="text-red-500 text-sm mt-1">
+                                            {{ errors.email[0] }}
+                                        </div>
                                     </div>
 
                                     <div class="relative mb-3">
@@ -51,6 +57,30 @@
                                                :placeholder="$t('Enter cpf')"
                                                required
                                         >
+                                        <div v-if="errors.cpf" class="text-red-500 text-sm mt-1">
+                                            {{ errors.cpf[0] }}
+                                        </div>
+                                    </div>
+
+                                    <div class="relative mb-3">
+                                        <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                                            <i class="fa-regular fa-phone"></i>
+                                        </div>
+                                        <input type="text"
+                                               name="phone"
+                                               v-maska
+                                               data-maska="[
+                                    '(##) ####-####',
+                                    '(##) #####-####'
+                                  ]"
+                                               v-model="registerForm.phone"
+                                               class="input-group"
+                                               :placeholder="$t('Enter your phone')"
+                                               required
+                                        >
+                                        <div v-if="errors.phone" class="text-red-500 text-sm mt-1">
+                                            {{ errors.phone[0] }}
+                                        </div>
                                     </div>
 
                                     <div class="relative mb-3">
@@ -68,6 +98,9 @@
                                             <i v-if="typeInputPassword === 'password'" class="fa-regular fa-eye"></i>
                                             <i v-if="typeInputPassword === 'text'" class="fa-sharp fa-regular fa-eye-slash"></i>
                                         </button>
+                                        <div v-if="errors.password" class="text-red-500 text-sm mt-1">
+                                            {{ errors.password[0] }}
+                                        </div>
                                     </div>
 
                                     <div class="relative mb-3">
@@ -85,23 +118,9 @@
                                             <i v-if="typeInputPassword === 'password'" class="fa-regular fa-eye"></i>
                                             <i v-if="typeInputPassword === 'text'" class="fa-sharp fa-regular fa-eye-slash"></i>
                                         </button>
-                                    </div>
-                                    <div class="relative mb-3">
-                                        <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-                                            <i class="fa-regular fa-phone"></i>
+                                        <div v-if="errors.password_confirmation" class="text-red-500 text-sm mt-1">
+                                            {{ errors.password_confirmation[0] }}
                                         </div>
-                                        <input type="text"
-                                               name="phone"
-                                               v-maska
-                                               data-maska="[
-                                    '(##) ####-####',
-                                    '(##) #####-####'
-                                  ]"
-                                               v-model="registerForm.phone"
-                                               class="input-group"
-                                               :placeholder="$t('Enter your phone')"
-                                               required
-                                        >
                                     </div>
 
                                     <div class="mb-3 mt-5">
@@ -117,7 +136,7 @@
                                             <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
                                                 <i class="fa-regular fa-user text-success-emphasis"></i>
                                             </div>
-                                            <input type="text" name="name" v-model="registerForm.reference_code" class="input-group" :placeholder="$t('Code')">
+                                            <input type="text" name="reference_code" v-model="registerForm.reference_code" class="input-group" :placeholder="$t('Code')">
                                         </div>
                                     </div>
 
@@ -138,8 +157,9 @@
                                     </div>
 
                                     <div class="mt-5 w-full">
-                                        <button type="submit" class="ui-button-blue rounded w-full mb-3">
-                                            {{ $t('Register') }}
+                                        <button type="submit" :disabled="isSubmitting" class="ui-button-blue rounded w-full mb-3" :class="{ 'opacity-50 cursor-not-allowed': isSubmitting }">
+                                            <span v-if="isSubmitting">{{ $t('Registering...') }}</span>
+                                            <span v-else>{{ $t('Register') }}</span>
                                         </button>
                                     </div>
                                 </form>
@@ -166,9 +186,7 @@
     </AuthLayout>
 </template>
 
-
 <script>
-
 import {useToast} from "vue-toastification";
 import {useAuthStore} from "@/Stores/Auth.js";
 import HttpApi from "@/Services/HttpApi.js";
@@ -180,10 +198,11 @@ import LoadingComponent from "@/Components/UI/LoadingComponent.vue";
 
 export default {
     props: [],
-    components: {LoadingComponent, AuthLayout },
+    components: { LoadingComponent, AuthLayout },
     data() {
         return {
             isLoading: false,
+            isSubmitting: false, // Adicionado para controlar o estado de envio
             typeInputPassword: 'password',
             isReferral: false,
             registerForm: {
@@ -191,16 +210,20 @@ export default {
                 email: '',
                 password: '',
                 cpf: '',
+                phone: '', // Movido para cima para melhor ordem
                 password_confirmation: '',
                 reference_code: '',
                 term_a: false,
                 agreement: false,
+                spin_token: '',
                 spin_data: null
             },
+            errors: {}
         }
     },
     setup() {
         const router = useRouter();
+        const route = useRoute(); // Adicionado para melhor acesso à rota
         const routeParams = reactive({
             code: null,
         });
@@ -212,101 +235,180 @@ export default {
             }
         });
 
-        return {
-            routeParams,
-            router
-        };
+        return { routeParams, router, route };
     },
     computed: {
         isAuthenticated() {
             const authStore = useAuthStore();
             return authStore.isAuth;
         },
-    },
-    beforeUnmount() {
-
+        formIsValid() {
+            return (
+                this.registerForm.name &&
+                this.registerForm.email &&
+                this.registerForm.password &&
+                this.registerForm.password_confirmation &&
+                this.registerForm.cpf &&
+                this.registerForm.phone && // Adicionado phone na validação
+                this.registerForm.term_a &&
+                this.registerForm.agreement &&
+                this.registerForm.password === this.registerForm.password_confirmation
+            );
+        }
     },
     mounted() {
-        const router = useRouter();
         if(this.isAuthenticated) {
-            router.push({ name: 'home' });
+            this.router.push({ name: 'home' });
+            return; // Importante: sair da função se já autenticado
         }
 
-        if (this.router.currentRoute.value.params.code) {
+        // Tratamento do código de referência melhorado
+        const routeCode = this.route.params.code || this.routeParams.code;
+        
+        if (routeCode) {
             try {
-                const str = atob(this.router.currentRoute.value.params.code);
+                // Tenta decodificar como base64
+                const str = atob(routeCode);
                 const obj = JSON.parse(str);
-
-
-                this.registerForm.spin_token = this.router.currentRoute.value.params.code;
+                this.registerForm.spin_token = routeCode;
+                this.registerForm.spin_data = obj;
             } catch (e) {
-                this.registerForm.reference_code = this.routeParams.code;
+                // Se falhar, trata como código de referência normal
+                this.registerForm.reference_code = routeCode;
                 this.isReferral = true;
             }
-        }else if(this.routeParams.code) {
-            this.registerForm.reference_code = this.routeParams.code;
-            this.isReferral = true;
         }
     },
     methods: {
-        redirectSocialTo: function() {
-            return '/auth/redirect/google'
+        redirectSocialTo() {
+            return '/auth/redirect/google';
         },
-        togglePassword: function() {
-            if(this.typeInputPassword === 'password') {
-                this.typeInputPassword = 'text';
-            }else{
-                this.typeInputPassword = 'password';
+        togglePassword() {
+            this.typeInputPassword = this.typeInputPassword === 'password' ? 'text' : 'password';
+        },
+        async registerSubmit(event) {
+            event.preventDefault();
+            
+            // Previne múltiplos envios
+            if (this.isSubmitting) {
+                return;
+            }
+            
+            if (!this.formIsValid) {
+                useToast().error(this.$t('Please fill all required fields correctly'));
+                return;
+            }
+
+            this.isSubmitting = true;
+            this.errors = {};
+            const toast = useToast();
+            const authStore = useAuthStore();
+
+            try {
+                // Preparação do payload com limpeza de dados
+                const payload = {
+                    name: this.registerForm.name.trim(),
+                    email: this.registerForm.email.trim().toLowerCase(),
+                    cpf: this.registerForm.cpf.replace(/\D/g, ''),
+                    phone: this.registerForm.phone.replace(/\D/g, ''),
+                    password: this.registerForm.password,
+                    password_confirmation: this.registerForm.password_confirmation,
+                    term_a: this.registerForm.term_a,
+                    agreement: this.registerForm.agreement
+                };
+
+                // Adicionar campos opcionais apenas se existirem
+                if (this.registerForm.reference_code) {
+                    payload.reference_code = this.registerForm.reference_code;
+                }
+                
+                if (this.registerForm.spin_token) {
+                    payload.spin_token = this.registerForm.spin_token;
+                }
+                
+                if (this.registerForm.spin_data) {
+                    payload.spin_data = this.registerForm.spin_data;
+                }
+
+                console.log('Enviando payload:', payload); // Debug
+
+                const response = await HttpApi.post('auth/register', payload);
+                
+                console.log('Resposta recebida:', response.data); // Debug
+                
+                if(response.data && response.data.access_token) {
+                    authStore.setToken(response.data.access_token);
+                    authStore.setUser(response.data.user);
+                    authStore.setIsAuth(true);
+
+                    // Reset do formulário
+                    this.resetForm();
+
+                    toast.success(this.$t('Your account has been created successfully'));
+                    
+                    // Aguarda um pouco antes de redirecionar
+                    setTimeout(() => {
+                        this.router.push({ name: 'profileDeposit' });
+                    }, 1000);
+                } else {
+                    throw new Error('Token de acesso não recebido');
+                }
+                
+            } catch (error) {
+                console.error('Erro no registro:', error); // Debug
+                
+                if (error.response) {
+                    // Erro do servidor
+                    const status = error.response.status;
+                    const data = error.response.data;
+
+                    console.log('Status:', status);
+                    console.log('Resposta do erro:', data);
+                    
+                    if (status === 422 && data.errors) {
+                        // Erros de validação
+                        this.errors = data.errors;
+                        Object.values(data.errors).flat().forEach(msg => {
+                            toast.error(msg);
+                        });
+                    } else if (status === 429) {
+                        // Rate limit
+                        toast.error(this.$t('Too many attempts. Please try again later.'));
+                    } else {
+                        // Outros erros do servidor
+                        toast.error(data.message || this.$t('Registration failed. Please try again.'));
+                    }
+                } else if (error.request) {
+                    // Erro de rede
+                    toast.error(this.$t('Network error. Please check your connection.'));
+                } else {
+                    // Outros erros
+                    toast.error(this.$t('An unexpected error occurred.'));
+                }
+            } finally {
+                this.isSubmitting = false;
             }
         },
-        registerSubmit: async function(event) {
-            const _this = this;
-            const _toast = useToast();
-            _this.isLoading = true;
-
-            const authStore = useAuthStore();
-            await HttpApi.post('auth/register', _this.registerForm)
-                .then(response => {
-                    if(response.data.access_token !== undefined) {
-                        authStore.setToken(response.data.access_token);
-                        authStore.setUser(response.data.user);
-                        authStore.setIsAuth(true);
-
-                        _this.registerForm = {
-                            name: '',
-                            email: '',
-                            password: '',
-                            password_confirmation: '',
-                            reference_code: '',
-                            term_a: false,
-                            agreement: false,
-                            spin_data: null
-                        };
-
-                        _this.router.push({ name: 'profileDeposit' });
-                        _toast.success(_this.$t('Your account has been created successfully'));
-                    }
-
-                    _this.isLoading = false;
-                })
-                .catch(error => {
-                    const _this = this;
-                    Object.entries(JSON.parse(error.request.responseText)).forEach(([key, value]) => {
-                        _toast.error(`${value}`);
-                    });
-                    _this.isLoading = false;
-                });
-        },
-    },
-    created() {
-
-    },
-    watch: {
-
-    },
+        resetForm() {
+            this.registerForm = {
+                name: '',
+                email: '',
+                password: '',
+                password_confirmation: '',
+                cpf: '',
+                phone: '',
+                reference_code: '',
+                term_a: false,
+                agreement: false,
+                spin_token: '',
+                spin_data: null
+            };
+            this.errors = {};
+        }
+    }
 };
 </script>
 
 <style scoped>
-
+/* Adicione estilos específicos se necessário */
 </style>

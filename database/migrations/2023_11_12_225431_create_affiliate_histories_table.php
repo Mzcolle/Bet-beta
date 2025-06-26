@@ -13,10 +13,17 @@ return new class extends Migration
     {
         Schema::create('affiliate_histories', function (Blueprint $table) {
             $table->id();
-            $table->integer('user_id')->unsigned()->index();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->integer('inviter')->unsigned()->index();
-            $table->foreign('inviter')->references('id')->on('users')->onDelete('cascade');
+            
+            // CORREÇÃO: Mudança de integer() para foreignId()
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('inviter')->references('id')->on('users')->onDelete('cascade');
+            
+            // OU se preferir a forma manual:
+            // $table->unsignedBigInteger('user_id')->index();
+            // $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            // $table->unsignedBigInteger('inviter')->index();
+            // $table->foreign('inviter')->references('id')->on('users')->onDelete('cascade');
+            
             $table->decimal('commission', 20, 2)->default(0);
             $table->string('commission_type')->nullable();
             $table->tinyInteger('status')->default(0);

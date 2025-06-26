@@ -90,7 +90,7 @@
             </div>
             <div class="flex flex-col md:flex-row items-center justify-center gap-2 border-y-[0.5px] border-[#ffffff] my-[40px] text-center text-base py-[20px]">
                 <div class="w-[100%] md:w-[80%]">
-                    <p class="pt-[20px]">{{ setting.software_name }} is an online entertainment website that offers its users a unique sports betting experience. This website is operated by Superbet88 International N.V., a company registered in Curaçao, under number 161859, with registered office in Zuikertuintjeweg Z/N (Zuikertuin Tower), Willemstad, Curaçao. an entity duly authorized and licensed by the Government of Curaçao.</p>
+                    <p class="pt-[20px]"> is an online entertainment website that offers its users a unique sports betting experience. This website is operated by Superbet88 International N.V., a company registered in Curaçao, under number 161859, with registered office in Zuikertuintjeweg Z/N (Zuikertuin Tower), Willemstad, Curaçao. an entity duly authorized and licensed by the Government of Curaçao.</p>
                     <p class="py-[20px]">By accessing, continuing to use, or browsing this website you agree that we may use certain browser cookies to improve your experience whilst using our site. We only use cookies to enhance your experience, and this does not interfere with your privacy.</p>
                 </div>
                 <div class="w-[120px] h-[50px]">
@@ -100,7 +100,7 @@
             <div class="flex flex-col justify-center items-center">
                 <div class="flex flex-row items-center justify-center gap-4">
                     <div class="w-[160px] h-[48px] flex justify-center items-center">
-                        <img src="https://static.elisa.bet/deploy-3d04fd3c0c138972484c9347e2b3f6d373d6872b-8f78347e8595363e1103/assets/seals/BeGambleAware.svg" alt="BeGambleAware">
+                        <!-- <img src="https://static.elisa.bet/deploy-3d04fd3c0c138972484c9347e2b3f6d373d6872b-8f78347e8595363e1103/assets/seals/BeGambleAware.svg" alt="BeGambleAware"> -->
                     </div>
                     <div class="w-[55px] h-[48px] flex justify-center items-center">
                         <img src="https://static.elisa.bet/deploy-3d04fd3c0c138972484c9347e2b3f6d373d6872b-8f78347e8595363e1103/assets/seals/gt_logo.png" alt="BeGambleAware">

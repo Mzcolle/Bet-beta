@@ -1,6 +1,7 @@
 <?php
 
 
+
 namespace App\Helpers;
 
 use App\Helpers\Core as Helper;
@@ -21,8 +22,41 @@ use Illuminate\Support\Str;
 use NumberFormatter;
 use Illuminate\Support\Facades\Http;
 
+// Adicione no início do arquivo
+use Illuminate\Support\Facades\Schema;
+
+if (!function_exists('getSetting')) {
+    function getSetting()
+    {
+        try {
+            return \App\Models\Setting::getSettings()->toArray();
+        } catch (\Exception $e) {
+            return (new \App\Models\Setting())->attributes;
+        }
+    }
+}
+
+if (!function_exists('getCustom')) {
+    function getCustom()
+    {
+        try {
+            if (!Schema::hasTable('custom_settings')) {
+                return [];
+            }
+            
+            $custom = \App\Models\CustomSetting::first();
+            return $custom ? $custom->toArray() : [];
+            
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+}
+
 class Core
 {
+
+    
     /**
      * @param Wallet $wallet
      * @param $bet
@@ -74,6 +108,8 @@ class Core
 
         return $changeBonus;
     }
+
+    
 
     /**
      * Paga e atualiza o bonus vip

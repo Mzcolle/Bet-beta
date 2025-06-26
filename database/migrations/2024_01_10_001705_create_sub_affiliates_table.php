@@ -13,10 +13,15 @@ return new class extends Migration
     {
         Schema::create('sub_affiliates', function (Blueprint $table) {
             $table->id();
-            $table->integer('affiliate_id')->unsigned()->index();
+            
+            // CORRIGIDO: Mudou de integer() para unsignedBigInteger()
+            $table->unsignedBigInteger('affiliate_id')->index();
             $table->foreign('affiliate_id')->references('id')->on('users')->cascadeOnDelete();
-            $table->integer('user_id')->unsigned()->index();
+            
+            // CORRIGIDO: Mudou de integer() para unsignedBigInteger()
+            $table->unsignedBigInteger('user_id')->index();
             $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
+            
             $table->tinyInteger('status')->default(0);
             $table->timestamps();
         });

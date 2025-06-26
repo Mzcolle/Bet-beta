@@ -292,33 +292,45 @@ class GameController extends Controller
      * @dev victormsalatiel
      * Show the form for editing the specified resource.
      */
-    public function allGames(Request $request)
-    {
-        $query = Game::query();
-        $query->with(['provider', 'categories']);
+public function allGames(Request $request)
+{
+    $query = Game::query();
+    $query->with(['provider', 'categories']);
 
-        if (!empty($request->provider) && $request->provider != 'all') {
-            $query->where('provider_id', $request->provider);
-        }
-
-        if (!empty($request->category) && $request->category != 'all') {
-            $query->whereHas('categories', function ($categoryQuery) use ($request) {
-                $categoryQuery->where('slug', $request->category);
-            });
-        }
-
-        if (isset($request->searchTerm) && !empty($request->searchTerm) && strlen($request->searchTerm) > 2) {
-            $query->whereLike(['game_code', 'game_name', 'description', 'distribution', 'provider.name'], $request->searchTerm);
-        }else{
-            $query->orderBy('views', 'desc');
-        }
-
-        $games = $query
-            ->where('status', 1)
-            ->paginate(12)->appends(request()->query());
-
-        return response()->json(['games' => $games]);
+    if (!empty($request->provider) && $request->provider != 'all') {
+        $query->where('provider_id', $request->provider);
     }
+
+    if (!empty($request->category) && $request->category != 'all') {
+        $query->whereHas('categories', function ($categoryQuery) use ($request) {
+            $categoryQuery->where('slug', $request->category);
+        });
+    }
+
+    if (isset($request->searchTerm) && !empty($request->searchTerm) && strlen($request->searchTerm) > 2) {
+        $query->whereLike(['game_code', 'game_name', 'description', 'distribution', 'provider.name'], $request->searchTerm);
+    } else {
+        $query->orderBy('views', 'desc');
+    }
+
+    $games = $query
+        ->where('status', 1)
+        ->paginate(1000)
+        ->appends(request()->query());
+
+    // Faz o replace do campo cover
+    $games->getCollection()->transform(function ($game) {
+        if ($game->cover) {
+            $game->cover = url('storage/games/' . $game->cover);
+        } else {
+            $game->cover = url('images/default-game.png');  // Caso queira um placeholder
+        }
+        return $game;
+    });
+
+    return response()->json(['games' => $games]);
+}
+
 
     /**
      * @dev victormsalatiel

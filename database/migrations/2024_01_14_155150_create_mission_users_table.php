@@ -13,10 +13,15 @@ return new class extends Migration
     {
         Schema::create('mission_users', function (Blueprint $table) {
             $table->id();
-            $table->integer('user_id')->unsigned()->index();
+            
+            // CORRIGIDO: user_id para ser compatível com users.id (bigint)
+            $table->unsignedBigInteger('user_id')->index();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->integer('mission_id')->unsigned()->index();
+            
+            // CORRIGIDO: mission_id também precisa ser bigint para ser compatível com missions.id
+            $table->unsignedBigInteger('mission_id')->index();
             $table->foreign('mission_id')->references('id')->on('missions')->onDelete('cascade');
+            
             $table->bigInteger('rounds')->default(0);
             $table->decimal('rewards', 10, 2)->default(0);
             $table->tinyInteger('status')->default(0);
