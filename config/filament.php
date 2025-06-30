@@ -4,13 +4,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Panels
+    |--------------------------------------------------------------------------
+    |
+    | Aqui você registra todos os painéis do Filament.
+    |
+    */
+
+    'panels' => [
+        App\Providers\Filament\AdminPanelProvider::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Broadcasting
     |--------------------------------------------------------------------------
     |
-    | By uncommenting the Laravel Echo configuration, you may connect Filament
-    | to any Pusher-compatible websockets server.
-    |
-    | This will allow your users to receive real-time notifications.
+    | Por padrão está desabilitado.
     |
     */
 
@@ -30,8 +40,7 @@ return [
     | Default Filesystem Disk
     |--------------------------------------------------------------------------
     |
-    | This is the storage disk Filament will use to put media. You may use any
-    | of the disks defined in the `config/filesystems.php`.
+    | O disco de armazenamento padrão do Filament.
     |
     */
 

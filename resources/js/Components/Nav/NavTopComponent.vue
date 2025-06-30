@@ -456,6 +456,20 @@
             </div>
         </div>
     </div>
+<!-- Tooltips faltando -->
+<div id="tooltip-home" role="tooltip" class="tooltip hidden">
+  Tooltip Home
+</div>
+
+<div id="tooltip-casino" role="tooltip" class="tooltip hidden">
+  Tooltip Casino
+</div>
+
+<div id="tooltip-sport" role="tooltip" class="tooltip hidden">
+  Tooltip Sport
+</div>
+
+
 </template>
 
 <script>
@@ -965,4 +979,6 @@ export default {
 		}
 	
 	}
+
+    
 </style>
