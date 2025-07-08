@@ -1,4 +1,4 @@
-name: Build Laravel Dependencies
+name: Save vendor
 
 on:
   push:
@@ -6,25 +6,26 @@ on:
       - main
 
 jobs:
-  build:
+  zip-vendor:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout the code
-      uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    - name: Setup PHP 8.2
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: 8.2
-        extensions: mbstring, bcmath, openssl, pdo, tokenizer, xml, ctype, curl, zip, sodium
-        tools: composer
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
 
-    - name: Install Composer dependencies
-      run: composer install --no-dev --optimize-autoloader
+      - name: Install dependencies
+        run: composer install --no-dev --no-interaction --prefer-dist
 
-    - name: Cache vendor folder
-      uses: actions/upload-artifact@v4
-      with:
-        name: vendor
-        path: vendor/
+      - name: Zip vendor folder
+        run: zip -r vendor-vendor.zip vendor
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: vendor-vendor
+          path: vendor-vendor.zip
