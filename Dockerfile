@@ -23,16 +23,17 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Configurar diretório de trabalho
 WORKDIR /var/www
 
-# Copiar aplicação e instalar dependências
+# Copiar aplicação
 COPY . /var/www
-RUN composer install --optimize-autoloader --no-dev
 
-# Gerar cache da aplicação
-RUN php artisan config:cache && php artisan route:cache
+# Instalar dependências sem rodar scripts automáticos
+RUN composer install --no-scripts --no-dev --optimize-autoloader
 
-# Configurar permissões
+# Corrigir permissões
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-# Expor porta e iniciar Laravel
+# Expor porta da aplicação
 EXPOSE 8000
-CMD php artisan serve --host=0.0.0.0 --port=8000
+
+# Iniciar Laravel com cache gerado
+CMD php artisan config:cache && php artisan route:cache && php artisan serve --host=0.0.0.0 --port=8000
