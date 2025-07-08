@@ -3,7 +3,7 @@ name: Save vendor
 on:
   push:
     branches:
-      - main
+      - dev  # ou 'main', se quiser rodar quando fizer push na main
 
 jobs:
   zip-vendor:
@@ -17,6 +17,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
+          extensions: mbstring, bcmath, openssl, pdo, tokenizer, xml, ctype, curl, zip, sodium
+          tools: composer
 
       - name: Install dependencies
         run: composer install --no-dev --no-interaction --prefer-dist
