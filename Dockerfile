@@ -1,6 +1,6 @@
 FROM php:8.1-fpm
 
-# Instalar extensões e dependências do PostgreSQL
+# Instalar dependências do sistema
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
@@ -14,26 +14,28 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     libpq-dev
 
-# Instala extensões PHP incluindo PostgreSQL
+# Instalar extensões PHP
 RUN docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Configurar diretório de trabalho
+# Definir diretório de trabalho
 WORKDIR /var/www
 
-# Copiar aplicação
-COPY . /var/www
+# Copiar arquivos da aplicação
+COPY . .
 
-# Instalar dependências sem rodar scripts automáticos
-RUN composer install --no-scripts --no-dev --optimize-autoloader
+# Instalar dependências PHP
+RUN composer install --no-dev --optimize-autoloader || true
 
 # Corrigir permissões
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+RUN chown -R www-data:www-data storage bootstrap/cache
 
-# Expor porta da aplicação
+# ⚠️ NÃO rode comandos Artisan que dependem de .env aqui!
+
+# Expõe a porta que o Laravel usará
 EXPOSE 8000
 
-# Iniciar Laravel com cache gerado
-CMD php artisan config:cache && php artisan route:cache && php artisan serve --host=0.0.0.0 --port=8000
+# Comando de inicialização
+CMD php artisan serve --host=0.0.0.0 --port=8000
