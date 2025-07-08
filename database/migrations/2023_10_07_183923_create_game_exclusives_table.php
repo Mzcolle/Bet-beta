@@ -11,6 +11,7 @@ return new class extends Migration
         if (!Schema::hasTable('game_exclusives')) {
             Schema::create('game_exclusives', function (Blueprint $table) {
                 $table->id();
+                $table->string('name')->nullable();
                 $table->timestamps();
                 // Adicione outras colunas conforme necessário
             });
